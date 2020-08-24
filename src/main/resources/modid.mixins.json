@@ -3,9 +3,13 @@
   "package": "net.fabricmc.example.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "GameRendererMixin",
+    "GLFWMixin",
+    "WindowMixin"
   ],
   "client": [
-    "ExampleMixin"
+    "ExampleMixin",
+    "InitMixin"
   ],
   "injectors": {
     "defaultRequire": 1

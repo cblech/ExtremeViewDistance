@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "extremeviewdistance",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Extreme View Distance",
+  "description": "This mod adds extreme view distance. Amazing, right?",
   "authors": [
-    "Me!"
+    "cblech"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/cblech/ExtremeViewDistance",
+    "sources": "https://github.com/cblech/ExtremeViewDistance.git"
   },
 
   "license": "CC0-1.0",
@@ -18,7 +18,7 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": [
+    "client": [
       "net.fabricmc.example.ExampleModKt::init"
     ]
   },
