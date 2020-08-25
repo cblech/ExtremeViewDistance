@@ -62,6 +62,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
+task jarToDotMc(type: Copy, dependsOn: ['remapJar']){
+    from "$buildDir/libs/fabric-example-mod-1.0.0.jar"
+    into System.getenv('APPDATA')+"/.minecraft/mods"
+}
+
 jar {
     from "LICENSE"
 }

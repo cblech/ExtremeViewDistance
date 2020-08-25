@@ -2,9 +2,6 @@ package net.fabricmc.example.renderer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.GlProgram;
-import net.minecraft.client.gl.GlProgramManager;
-import net.minecraft.client.gl.GlShader;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -23,7 +20,7 @@ public class MyGlShader {
 
     public void attachTo(MyGlProgram glProgram) {
         RenderSystem.assertThread(RenderSystem::isOnRenderThread);
-        GlStateManager.attachShader(glProgram.getGlRefference(), glRefference);
+        GlStateManager.attachShader(glProgram.getGlReference(), glRefference);
     }
 
     public static MyGlShader createFromSource(Type type, String sourceCode) throws IOException {

@@ -22,10 +22,15 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
 
     @Shadow private boolean renderHand;
 
-    @Shadow public abstract void renderHand(MatrixStack matrices, Camera camera, float tickDelta);
+    @Shadow protected abstract void renderHand(MatrixStack matrices, Camera camera, float tickDelta);
 
+    @Shadow @Final private MinecraftClient client;
     private boolean cancle = true;
 
+    @Override
+    public MinecraftClient getMinecraftClient() {
+        return client;
+    }
 
     @Override
     public void renderHandRelay(MatrixStack matrix, Camera camera, float tickDelta) {
@@ -53,6 +58,7 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
             RenderFarWorldMod.rfw.render(tickDelta,limitTime,matrix,this);
         }
         catch (NullPointerException e){
+            e.printStackTrace();
             RenderFarWorldMod.initRfw();
         }
     }
