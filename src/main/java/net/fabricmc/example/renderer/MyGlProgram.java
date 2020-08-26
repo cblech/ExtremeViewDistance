@@ -5,6 +5,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import javafx.util.Pair;
 import net.fabricmc.example.renderer.uniform.Uniform;
 import net.minecraft.client.gl.GlProgramManager;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL20;
 
 import java.io.IOException;
@@ -92,6 +94,16 @@ public class MyGlProgram  {
 
         public Factory fragmentShaderFromSource(String source) throws IOException {
             product.fragmentShader = MyGlShader.createFromSource(MyGlShader.Type.FRAGMENT,source);
+            return this;
+        }
+
+        public Factory vertexShaderFromResource(Identifier identifier, ResourceManager resourceManager) throws IOException {
+            product.vertexShader = MyGlShader.createFromResource(MyGlShader.Type.VERTEX,identifier,resourceManager);
+            return this;
+        }
+
+        public Factory fragmentShaderFromResource(Identifier identifier, ResourceManager resourceManager) throws IOException {
+            product.fragmentShader = MyGlShader.createFromResource(MyGlShader.Type.FRAGMENT,identifier,resourceManager);
             return this;
         }
 

@@ -63,39 +63,11 @@ public class RendererFarWorld {
 
         int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
 
-        final String vertexShaderSource =
-                "#version 330\n" +
-                        "layout (location=0) in vec3 aPos;\n" +
-                        "layout (location=1) in vec4 aColor;\n" +
-                        "" +
-                        "out vec4 vColor;" +
-                        "" +
-                        "uniform mat4 uModelMat;" +
-                        "uniform mat4 uViewProjectionMat;" +
-                        "\n" +
-                        "void main()\n" +
-                        "{\n" +
-                        "    vColor = aColor;" +
-                        "    gl_Position =uViewProjectionMat* uModelMat*vec4(aPos.x, aPos.y, aPos.z, 1.0);\n" +
-                        "}";
-
-        final String fragmentShaderSource =
-                "#version 330\n" +
-                        "in vec4 vColor;" +
-                        "" +
-                        "out vec4 FragColor;\n" +
-                        "" +
-                        "\n" +
-                        "void main()\n" +
-                        "{\n" +
-                        "    FragColor = vColor;\n" +
-                        "} ";
-
 
         try {
             program = MyGlProgram.factory()
-                    .vertexShaderFromSource(vertexShaderSource)
-                    .fragmentShaderFromSource(fragmentShaderSource)
+                    .vertexShaderFromResource(new Identifier("extremeviewdistance:shader/world_vertex.glsl"),gameRendererExposed.getResourceContainer())
+                    .fragmentShaderFromResource(new Identifier("extremeviewdistance:shader/world_fragment.glsl"),gameRendererExposed.getResourceContainer())
                     .uniform(uModelMat)
                     .uniform(uViewProjectionMat)
                     .create();
@@ -103,33 +75,6 @@ public class RendererFarWorld {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        try {
-            //gameRendererExposed.getResourceContainer().getResource(new Identifier("extremeviewdistance:shader/test_shader.glsl"));
-
-            System.out.println(gameRendererExposed.getResourceContainer().getResource(new Identifier("extremeviewdistance:test_shader.glsl")));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-/*
-
-        int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
-        GL20.glShaderSource(vertexShader,vertexShaderSource);
-        GL20.glCompileShader(vertexShader);
-
-        int fragmentShader = GL20.glCreateShader(GL20.GL_FRAGMENT_SHADER);
-        GL20.glShaderSource(fragmentShader,fragmentShaderSource);
-        GL20.glCompileShader(fragmentShader);
-
-        shaderProgram = GL20.glCreateProgram();
-
-
-        GL20.glAttachShader(shaderProgram,vertexShader);
-        GL20.glAttachShader(shaderProgram,fragmentShader);
-        GL20.glLinkProgram(shaderProgram);
-*/
-
 
         float size = 1f;
 
@@ -155,27 +100,6 @@ public class RendererFarWorld {
 
         ARBVertexArrayObject.glBindVertexArray(currentVAO);
 
-/*
-        System.out.println("########################");
-        System.out.println("OpenGL11: "+caps.OpenGL11);
-        System.out.println("OpenGL12: "+caps.OpenGL12);
-        System.out.println("OpenGL13: "+caps.OpenGL13);
-        System.out.println("OpenGL14: "+caps.OpenGL14);
-        System.out.println("OpenGL15: "+caps.OpenGL15);
-        System.out.println("OpenGL20: "+caps.OpenGL20);
-        System.out.println("OpenGL21: "+caps.OpenGL21);
-        System.out.println("OpenGL30: "+caps.OpenGL30);
-        System.out.println("OpenGL31: "+caps.OpenGL31);
-        System.out.println("OpenGL32: "+caps.OpenGL32);
-        System.out.println("OpenGL33: "+caps.OpenGL33);
-        System.out.println("OpenGL40: "+caps.OpenGL40);
-        System.out.println("OpenGL41: "+caps.OpenGL41);
-        System.out.println("OpenGL42: "+caps.OpenGL42);
-        System.out.println("OpenGL43: "+caps.OpenGL43);
-        System.out.println("OpenGL44: "+caps.OpenGL44);
-        System.out.println("OpenGL45: "+caps.OpenGL45);
-        System.out.println("OpenGL46: "+caps.OpenGL46);
-        System.out.println("########################");*/
     }
 
     public void renderA(float tickDelta, long limitTime, MatrixStack matrix)  {
@@ -189,14 +113,6 @@ public class RendererFarWorld {
         gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
 
 
-        try {
-            Resource r=gameRendererExposed.getResourceContainer().getResource(Identifier.tryParse("extremeviewdistance:shader/test_shader.glsl"));
-
-            String theString = IOUtils.toString(r.getInputStream(), StandardCharsets.UTF_8);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         GL11.glClearColor(.04f, .02f, .1f, 1f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
@@ -274,7 +190,7 @@ public class RendererFarWorld {
     private Matrix4f getViewProjectionMatrix(float tickDelta){
         Matrix4f viewProjectionMatrix = new Matrix4f();
         viewProjectionMatrix.loadIdentity();
-        viewProjectionMatrix.multiply(((GameRenderer)gameRenderer).getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false));
+        viewProjectionMatrix.multiply(gameRenderer.getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false));
         //new Vector3f(0,1,0).getDegreesQuaternion( gameRendererInstance.getCamera().getPitch());
 
         viewProjectionMatrix.multiply(new Vector3f(1,0,0).getDegreesQuaternion( gameRenderer.getCamera().getPitch()));
