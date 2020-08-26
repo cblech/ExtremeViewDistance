@@ -1,9 +1,8 @@
 package net.fabricmc.example.mixin;
 
-import net.fabricmc.example.RenderFarWorldMod;
 import net.fabricmc.example.renderer.IGameRendererExposed;
+import net.fabricmc.example.renderer.RendererFarWorld;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -15,8 +14,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.awt.font.ImageGraphicAttribute;
+
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin implements IGameRendererExposed {
+
+    private RendererFarWorld rendererFarWorld;
 
     @Shadow @Final private Camera camera;
 
@@ -25,11 +28,17 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
     @Shadow protected abstract void renderHand(MatrixStack matrices, Camera camera, float tickDelta);
 
     @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private ResourceManager resourceContainer;
     private boolean cancle = true;
 
     @Override
     public MinecraftClient getMinecraftClient() {
         return client;
+    }
+
+    @Override
+    public ResourceManager getResourceContainer() {
+        return resourceContainer;
     }
 
     @Override
@@ -55,11 +64,11 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
 
         int i = 0;
         try{
-            RenderFarWorldMod.rfw.render(tickDelta,limitTime,matrix,this);
+            rendererFarWorld.render(tickDelta,limitTime,matrix);
         }
         catch (NullPointerException e){
             e.printStackTrace();
-            RenderFarWorldMod.initRfw();
+            rendererFarWorld = new RendererFarWorld((GameRenderer)(IGameRendererExposed)this);
         }
     }
 

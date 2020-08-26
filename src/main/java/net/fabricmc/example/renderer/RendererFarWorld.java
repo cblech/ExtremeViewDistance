@@ -12,17 +12,24 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
+import net.minecraft.resource.Resource;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
+import org.apache.commons.io.IOUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.function.Predicate;
 
 
-public class RenererFarWorld {
+public class RendererFarWorld {
 
     //private int shaderProgram;
     private int VBO;
@@ -30,9 +37,8 @@ public class RenererFarWorld {
 
     private MyGlProgram program;
 
-    private Framebuffer framebuffer;
-
-    private GLCapabilities caps;
+    private GameRenderer gameRenderer;
+    private IGameRendererExposed gameRendererExposed;
 
 
     private final static int FLOAT_SIZE = 4;
@@ -42,28 +48,17 @@ public class RenererFarWorld {
     UniformMatrix4 uViewProjectionMat = new UniformMatrix4("uViewProjectionMat");
 
 
-    public RenererFarWorld() {
-/*      KHRDebug.glDebugMessageCallback(new GLDebugMessageCallbackI() {
-            @Override
-            public void invoke(int source, int type, int id, int severity, int length, long message, long userParam) {
-                Pointer p = new Pointer() {
-                    @Override
-                    public long address() {
-                        return message;
-                    }
-                };
+    public RendererFarWorld(GameRenderer gameRenderer) {
 
-                p.getClass();
-            }
-        },0);*/
+        this.gameRenderer = gameRenderer;
+        this.gameRendererExposed = (IGameRendererExposed) gameRenderer;
 
+        //this.framebuffer = new Framebuffer(MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight(), true, false);
 
-        this.framebuffer = new Framebuffer(MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight(), true, false);
-
-        System.out.println("########################");
+        System.out.println("######## Setting up FarWorld Renderer ########");
         System.out.println("OpenGL: " + GL11.glGetString(GL11.GL_VERSION));
 
-        caps = GL.createCapabilities(false);
+        //caps = GL.createCapabilities(false);
 
 
         int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
@@ -106,6 +101,14 @@ public class RenererFarWorld {
                     .create();
 
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            //gameRendererExposed.getResourceContainer().getResource(new Identifier("extremeviewdistance:shader/test_shader.glsl"));
+
+            System.out.println(gameRendererExposed.getResourceContainer().getResource(new Identifier("extremeviewdistance:test_shader.glsl")));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -175,16 +178,25 @@ public class RenererFarWorld {
         System.out.println("########################");*/
     }
 
-    public void renderA(float tickDelta, long limitTime, MatrixStack matrix, IGameRendererExposed gameRendererInstance) {
+    public void renderA(float tickDelta, long limitTime, MatrixStack matrix)  {
 
-        if(InputUtil.isKeyPressed(gameRendererInstance.getMinecraftClient().getWindow().getHandle(),GLFW.GLFW_KEY_O)){
+        if(InputUtil.isKeyPressed(gameRendererExposed.getMinecraftClient().getWindow().getHandle(),GLFW.GLFW_KEY_O)){
             int i = 0;
         }
 
         int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
 
-        gameRendererInstance.getCamera().update(gameRendererInstance.getMinecraftClient().world, gameRendererInstance.getMinecraftClient().cameraEntity, false, false, tickDelta);
+        gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
 
+
+        try {
+            Resource r=gameRendererExposed.getResourceContainer().getResource(Identifier.tryParse("extremeviewdistance:shader/test_shader.glsl"));
+
+            String theString = IOUtils.toString(r.getInputStream(), StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         GL11.glClearColor(.04f, .02f, .1f, 1f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
@@ -202,7 +214,7 @@ public class RenererFarWorld {
         //viewProjectionMatrix.multiply(Matrix4f.projectionMatrix(gameRendererInstance.getMinecraftClient().getFramebuffer().viewportWidth,gameRendererInstance.getMinecraftClient().getFramebuffer().viewportHeight,0.1f,1000.f));
 
         program.pushUniform(uModelMat, modelMat);
-        program.pushUniform(uViewProjectionMat,getViewProjectionMatrix(gameRendererInstance,tickDelta));
+        program.pushUniform(uViewProjectionMat,getViewProjectionMatrix(tickDelta));
 
 
         //RenderSystem.depthMask(false);
@@ -251,26 +263,27 @@ public class RenererFarWorld {
         //RenderSystem.rotatef((System.currentTimeMillis()/10)%360,0,1,1);
         //RenderSystem.translatef(-1,1,0);
 
-        if (gameRendererInstance.getRenderHand()) {
+        if (gameRendererExposed.getRenderHand()) {
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
-            gameRendererInstance.renderHandRelay(matrix, gameRendererInstance.getCamera(), tickDelta);
+            gameRendererExposed.renderHandRelay(matrix, gameRenderer.getCamera(), tickDelta);
         }
 
         RenderSystem.popMatrix();
     }
 
-    private Matrix4f getViewProjectionMatrix(IGameRendererExposed gameRendererInstance,float tickDelta){
+    private Matrix4f getViewProjectionMatrix(float tickDelta){
         Matrix4f viewProjectionMatrix = new Matrix4f();
         viewProjectionMatrix.loadIdentity();
-        viewProjectionMatrix.multiply(((GameRenderer)gameRendererInstance).getBasicProjectionMatrix(gameRendererInstance.getCamera(), tickDelta, false));
+        viewProjectionMatrix.multiply(((GameRenderer)gameRenderer).getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false));
         //new Vector3f(0,1,0).getDegreesQuaternion( gameRendererInstance.getCamera().getPitch());
 
-        viewProjectionMatrix.multiply(new Vector3f(1,0,0).getDegreesQuaternion( gameRendererInstance.getCamera().getPitch()));
-        viewProjectionMatrix.multiply(new Vector3f(0,1,0).getDegreesQuaternion( gameRendererInstance.getCamera().getYaw()));
+        viewProjectionMatrix.multiply(new Vector3f(1,0,0).getDegreesQuaternion( gameRenderer.getCamera().getPitch()));
+        viewProjectionMatrix.multiply(new Vector3f(0,1,0).getDegreesQuaternion( gameRenderer.getCamera().getYaw()));
         viewProjectionMatrix.multiply(Matrix4f.translate(
-                (float)gameRendererInstance.getCamera().getPos().getX(),
-                -(float)gameRendererInstance.getCamera().getPos().getY(),
-                (float)gameRendererInstance.getCamera().getPos().getZ()));
+                (float)gameRenderer.getCamera().getPos().getX(),
+                -(float)gameRenderer.getCamera().getPos().getY(),
+                (float)gameRenderer.getCamera().getPos().getZ()));
+
 
         return viewProjectionMatrix;
     }
@@ -310,7 +323,7 @@ public class RenererFarWorld {
 
     }
 
-    public void render(float tickDelta, long limitTime, MatrixStack matrix, IGameRendererExposed gameRendererInstance) {
-        renderA(tickDelta, limitTime, matrix, gameRendererInstance);
+    public void render(float tickDelta, long limitTime, MatrixStack matrix) {
+        renderA(tickDelta, limitTime, matrix);
     }
 }

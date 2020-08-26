@@ -1,6 +1,5 @@
 package net.fabricmc.example.mixin;
 
-import net.fabricmc.example.RenderFarWorldMod;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;

@@ -1,23 +1,23 @@
 package net.fabricmc.example
 
-import net.fabricmc.example.renderer.RenererFarWorld
+import net.fabricmc.example.renderer.RendererFarWorld
 
 // For support join https://discord.gg/v6v4pMv
 
-class RenderFarWorldMod{
-    companion object{
-        lateinit var rfw: RenererFarWorld
+//class RenderFarWorldMod{
+//    companion object{
+//        lateinit var rfw: RendererFarWorld
+//
+//        @JvmStatic
+//        fun initRfw()
+//        {
+//            rfw = RendererFarWorld()
+//        }
+//    }
+//}
 
-        @JvmStatic
-        fun initRfw()
-        {
-            rfw = RenererFarWorld()
-        }
-    }
-}
 
-
-val renderFarWorldMod = RenderFarWorldMod();
+//val renderFarWorldMod = RenderFarWorldMod();
 
 
 @Suppress("unused")
