@@ -3,30 +3,18 @@ package net.fabricmc.example.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.example.renderer.uniform.UniformFloat;
 import net.fabricmc.example.renderer.uniform.UniformMatrix4;
-import net.minecraft.client.Keyboard;
+import net.fabricmc.example.renderer.uniform.UniformVec3;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.entity.Entity;
-import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.BlockView;
-import org.apache.commons.io.IOUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.function.Predicate;
 
 
 public class RendererFarWorld {
@@ -43,7 +31,7 @@ public class RendererFarWorld {
 
     private final static int FLOAT_SIZE = 4;
 
-    UniformFloat uPosXOffset = new UniformFloat("uPosXOffset");
+    UniformVec3 uEyeWorldPos = new UniformVec3("uEyeWorldPos");
     UniformMatrix4 uModelMat = new UniformMatrix4("uModelMat");
     UniformMatrix4 uViewProjectionMat = new UniformMatrix4("uViewProjectionMat");
 
@@ -67,9 +55,12 @@ public class RendererFarWorld {
         try {
             program = MyGlProgram.factory()
                     .vertexShaderFromResource(new Identifier("extremeviewdistance:shader/world_vertex.glsl"),gameRendererExposed.getResourceContainer())
+                    .tesselationControlShaderFromResource(new Identifier("extremeviewdistance:shader/world_tesselation_control.glsl"),gameRendererExposed.getResourceContainer())
+                    .tesselationEvaluationShaderFromResource(new Identifier("extremeviewdistance:shader/world_tesselation_evaluation.glsl"),gameRendererExposed.getResourceContainer())
                     .fragmentShaderFromResource(new Identifier("extremeviewdistance:shader/world_fragment.glsl"),gameRendererExposed.getResourceContainer())
                     .uniform(uModelMat)
                     .uniform(uViewProjectionMat)
+                    .uniform(uEyeWorldPos)
                     .create();
 
         } catch (IOException e) {
@@ -101,22 +92,14 @@ public class RendererFarWorld {
         ARBVertexArrayObject.glBindVertexArray(currentVAO);
 
     }
-
     public void renderA(float tickDelta, long limitTime, MatrixStack matrix)  {
-
-        if(InputUtil.isKeyPressed(gameRendererExposed.getMinecraftClient().getWindow().getHandle(),GLFW.GLFW_KEY_O)){
-            int i = 0;
-        }
 
         int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
 
         gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
 
-
-
         GL11.glClearColor(.04f, .02f, .1f, 1f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-
 
         GL11.glDisable(GL11.GL_CULL_FACE);
 
@@ -124,13 +107,14 @@ public class RendererFarWorld {
 
         Matrix4f modelMat = new Matrix4f();
         modelMat.loadIdentity();
-        modelMat.multiply(Matrix4f.translate(0.3f, 0, -1));
+        modelMat.multiply(Matrix4f.translate(0f, 0, 0));
 
 
         //viewProjectionMatrix.multiply(Matrix4f.projectionMatrix(gameRendererInstance.getMinecraftClient().getFramebuffer().viewportWidth,gameRendererInstance.getMinecraftClient().getFramebuffer().viewportHeight,0.1f,1000.f));
 
         program.pushUniform(uModelMat, modelMat);
         program.pushUniform(uViewProjectionMat,getViewProjectionMatrix(tickDelta));
+        program.pushUniform(uEyeWorldPos, new Vector3f(gameRenderer.getCamera().getPos()));
 
 
         //RenderSystem.depthMask(false);
@@ -140,19 +124,22 @@ public class RendererFarWorld {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
 
 
-        float size = 0.5f;
+        float size = 10f;
 
         float[] verts = {
-                -1f, -1f, -1f, 1.0f,  .0F,  .0F, 1.0F,
-                 1f, -1f, -1f, 1.0F, 1.0f,  .0F, 1.0F,
-                -1f,  1f, -1f,  .0F,  .0F, 1.0f, 1.0F
+                -size, 0, -size, 1.0f, 1.0f, .0f, 1.0F,
+                 size, 0, -size, .0F, 1.0f, 1.0f, 1.0F,
+                -size, 0,  size, 1.0f, .0f, 1.0f, 1.0F,
+                 size, 0, -size, .0F, 1.0f, 1.0f, 1.0F,
+                -size, 0,  size, 1.0f, .0f, 1.0f, 1.0F,
+                 size, 0,  size, 1.0f, 1.0f, 1.0f, 1.0F
         };
 
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, verts, GL15.GL_STATIC_DRAW);
 
-
-        GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
-
+        GL11.glPolygonMode( GL11.GL_FRONT_AND_BACK, GL11.GL_LINE );
+        GL11.glDrawArrays(ARBTessellationShader.GL_PATCHES, 0, 6);
+        GL11.glPolygonMode( GL11.GL_FRONT_AND_BACK, GL11.GL_FILL );
 
         ARBVertexArrayObject.glBindVertexArray(currentVAO);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);

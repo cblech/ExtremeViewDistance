@@ -17,6 +17,8 @@ public class MyGlProgram  {
     private int glReference;
     private MyGlShader vertexShader=null;
     private MyGlShader fragmentShader=null;
+    private MyGlShader tesselationControlShader=null;
+    private MyGlShader tesselationEvaluationShader=null;
     private final Map<Uniform, Integer> uniforms = new HashMap<>();
 
     private static MyGlProgram currentlyUsedProgram = null;
@@ -41,6 +43,12 @@ public class MyGlProgram  {
         fragmentShader.attachTo(this);
         vertexShader.attachTo(this);
 
+        if(tesselationControlShader!=null)
+            tesselationControlShader.attachTo(this);
+
+        if(tesselationEvaluationShader!=null)
+            tesselationEvaluationShader.attachTo(this);
+
         GlStateManager.linkProgram(glReference);
 
         int i = GlStateManager.getProgram(glReference, 35714);
@@ -52,8 +60,7 @@ public class MyGlProgram  {
     }
 
     public <T extends Uniform<U>,U> void pushUniform(T uniform,U data){
-        if(!isUsed())
-        {
+        if(!isUsed()){
             System.err.println("This Program is not currently used. Aborting Uniform push");
             return;
         }
@@ -104,6 +111,16 @@ public class MyGlProgram  {
 
         public Factory fragmentShaderFromResource(Identifier identifier, ResourceManager resourceManager) throws IOException {
             product.fragmentShader = MyGlShader.createFromResource(MyGlShader.Type.FRAGMENT,identifier,resourceManager);
+            return this;
+        }
+
+        public Factory tesselationControlShaderFromResource(Identifier identifier, ResourceManager resourceManager) throws IOException {
+            product.tesselationControlShader = MyGlShader.createFromResource(MyGlShader.Type.TESSELATION_CONTROL,identifier,resourceManager);
+            return this;
+        }
+
+        public Factory tesselationEvaluationShaderFromResource(Identifier identifier, ResourceManager resourceManager) throws IOException {
+            product.tesselationEvaluationShader = MyGlShader.createFromResource(MyGlShader.Type.TESSELATION_EVALUATION,identifier,resourceManager);
             return this;
         }
 

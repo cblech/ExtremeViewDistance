@@ -7,6 +7,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.lwjgl.opengl.ARBTessellationShader;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
@@ -73,6 +74,8 @@ public class MyGlShader {
 
     enum Type {
         VERTEX("Vertex Shader", GL20.GL_VERTEX_SHADER),
+        TESSELATION_CONTROL("Tesselation Control Shader", ARBTessellationShader.GL_TESS_CONTROL_SHADER),
+        TESSELATION_EVALUATION("Tesselation Evaluation Shader", ARBTessellationShader.GL_TESS_EVALUATION_SHADER),
         FRAGMENT("Fragment Shader", GL20.GL_FRAGMENT_SHADER);
 
         String name;

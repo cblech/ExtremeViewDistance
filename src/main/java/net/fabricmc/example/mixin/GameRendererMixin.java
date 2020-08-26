@@ -5,8 +5,10 @@ import net.fabricmc.example.renderer.RendererFarWorld;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.ResourceManager;
+import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -56,20 +58,44 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
         return camera;
     }
 
+    private boolean oPressed=false;
+    private boolean pPressed=false;
+
     @Inject(at = @At("HEAD"), method = "renderWorld",cancellable = true)
     void renderWorld(float tickDelta, long limitTime, MatrixStack matrix, CallbackInfo ci)
     {
-        if(cancle)
+
+        if(InputUtil.isKeyPressed(getMinecraftClient().getWindow().getHandle(), GLFW.GLFW_KEY_O)){
+            if(!oPressed){
+                cancle = !cancle;
+                oPressed=true;
+            }
+        }else{
+            oPressed=false;
+        }
+
+        if(InputUtil.isKeyPressed(getMinecraftClient().getWindow().getHandle(), GLFW.GLFW_KEY_P)){
+            if(!pPressed){
+                rendererFarWorld = null;
+                pPressed=true;
+            }
+        }else{
+            pPressed=false;
+        }
+
+
+        if(cancle){
             ci.cancel();
 
-        int i = 0;
-        try{
-            rendererFarWorld.render(tickDelta,limitTime,matrix);
+            try{
+                rendererFarWorld.render(tickDelta,limitTime,matrix);
+            }
+            catch (NullPointerException e){
+                e.printStackTrace();
+                rendererFarWorld = new RendererFarWorld((GameRenderer)(IGameRendererExposed)this);
+            }
         }
-        catch (NullPointerException e){
-            e.printStackTrace();
-            rendererFarWorld = new RendererFarWorld((GameRenderer)(IGameRendererExposed)this);
-        }
+
     }
 
 }
