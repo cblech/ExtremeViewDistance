@@ -9,9 +9,6 @@ public class UniformVec3 extends Uniform<Vector3f>{
         super(name);
     }
 
-    public void push(int location, Vec3d data) {
-        push(location,new Vector3f(data));
-    }
 
     @Override
     public void push(int location, Vector3f data) {

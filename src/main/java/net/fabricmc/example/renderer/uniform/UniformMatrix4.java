@@ -9,16 +9,21 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class UniformMatrix4 extends Uniform<Matrix4f> {
+
+    private static ByteBuffer bb = ByteBuffer.allocateDirect(16*4);
+    private static FloatBuffer fb;
     public UniformMatrix4(String name) {
         super(name);
     }
 
+    static {
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        fb = bb.asFloatBuffer();
+    }
+
     @Override
     public void push(int location, Matrix4f data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(16*4);
-        bb.order(ByteOrder.LITTLE_ENDIAN);
 
-        FloatBuffer fb = bb.asFloatBuffer();
         data.writeToBuffer(fb);
 
         GL20.glUniformMatrix4fv(location, false, fb);

@@ -13,7 +13,7 @@ in vec4 tcColor[];
 out vec4 teWorldPos[];
 out vec4 teColor[];
 
-float GetTessLevel(float Distance0, float Distance1)
+float GetTessLevel(float Distance0, float Distance1,float DistanceBetween)
 {
     float AvgDistance = (Distance0 + Distance1) / 2.0;
 
@@ -31,14 +31,15 @@ float GetTessLevel(float Distance0, float Distance1)
 
     */
 
-    return 4000.0 / AvgDistance;
+    return (100.0*DistanceBetween) / (AvgDistance * (1+AvgDistance*0.001));
 }
 
 void main()
 {
+    float size = min(distance(tcWorldPos[1].xyz,tcWorldPos[2].xyz),distance(tcWorldPos[2].xyz,tcWorldPos[0].xyz));
     // Set the control points of the output patch
     teWorldPos[gl_InvocationID] = tcWorldPos[gl_InvocationID];
-    teColor[gl_InvocationID] = vec4(distance(uEyeWorldPos, tcWorldPos[gl_InvocationID].xyz)/100.f);
+    teColor[gl_InvocationID] = tcColor[gl_InvocationID];
     //teColor[gl_InvocationID] = tcColor[gl_InvocationID];
 
     // Calculate the distance from the camera to the three control points
@@ -47,8 +48,8 @@ void main()
     float EyeToVertexDistance2 = distance(uEyeWorldPos, tcWorldPos[2].xyz);
 
     // Calculate the tessellation levels
-    gl_TessLevelOuter[0] = GetTessLevel(EyeToVertexDistance1, EyeToVertexDistance2);
-    gl_TessLevelOuter[1] = GetTessLevel(EyeToVertexDistance2, EyeToVertexDistance0);
-    gl_TessLevelOuter[2] = GetTessLevel(EyeToVertexDistance0, EyeToVertexDistance1);
+    gl_TessLevelOuter[0] = GetTessLevel(EyeToVertexDistance1, EyeToVertexDistance2,size);
+    gl_TessLevelOuter[1] = GetTessLevel(EyeToVertexDistance2, EyeToVertexDistance0,size);
+    gl_TessLevelOuter[2] = GetTessLevel(EyeToVertexDistance0, EyeToVertexDistance1,size);
     gl_TessLevelInner[0] = gl_TessLevelOuter[2];
 }

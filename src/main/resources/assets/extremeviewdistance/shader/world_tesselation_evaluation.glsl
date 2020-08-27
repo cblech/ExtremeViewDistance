@@ -38,5 +38,6 @@ void main()
     //float Displacement = texture(gDisplacementMap, TexCoord_FS_in.xy).x;
     //WorldPos_FS_in += Normal_FS_in * Displacement * gDispFactor;
     gl_Position = uViewProjectionMat * fWorldPos;
+    gl_Position = vec4(gl_Position.x,gl_Position.y,gl_Position.z,gl_Position.w);
 }
 

@@ -3,8 +3,10 @@ package net.fabricmc.example.mixin;
 import net.fabricmc.example.renderer.IGameRendererExposed;
 import net.fabricmc.example.renderer.RendererFarWorld;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.BlankGlyph;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.ResourceManager;
@@ -31,6 +33,24 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
 
     @Shadow @Final private MinecraftClient client;
     @Shadow @Final private ResourceManager resourceContainer;
+
+    @Shadow protected abstract double getFov(Camera camera, float tickDelta, boolean changingFov);
+
+    @Shadow private long lastWindowFocusedTime;
+    @Shadow private long lastWorldIconUpdate;
+
+    @Shadow protected abstract void updateWorldIcon();
+
+    @Shadow protected abstract boolean shouldRenderBlockOutline();
+
+    @Shadow @Final private LightmapTextureManager lightmapTextureManager;
+    @Shadow private float viewDistance;
+
+    @Shadow protected abstract void bobViewWhenHurt(MatrixStack matrixStack, float f);
+
+    @Shadow protected abstract void bobView(MatrixStack matrixStack, float f);
+
+    @Shadow private int ticks;
     private boolean cancle = true;
 
     @Override
@@ -60,6 +80,66 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
 
     private boolean oPressed=false;
     private boolean pPressed=false;
+
+    @Override
+    public double getFovRelay(Camera camera, float tickDelta, boolean changingFov) {
+        return getFov(camera,tickDelta,changingFov);
+    }
+
+    @Override
+    public long getLastWindowFocusedTime() {
+        return lastWindowFocusedTime;
+    }
+
+    @Override
+    public void setLastWindowFocusedTime(long lastWindowFocusedTime) {
+        this.lastWindowFocusedTime = lastWindowFocusedTime;
+    }
+
+    @Override
+    public long getLastWorldIconUpdate() {
+        return lastWorldIconUpdate;
+    }
+
+    @Override
+    public void setLastWorldIconUpdate(long lastWorldIconUpdate) {
+        this.lastWorldIconUpdate = lastWorldIconUpdate;
+    }
+
+    @Override
+    public void updateWorldIconRelay() {
+        updateWorldIcon();
+    }
+
+    @Override
+    public boolean shouldRenderBlockOutlineRelay() {
+        return shouldRenderBlockOutline();
+    }
+
+    @Override
+    public LightmapTextureManager getLightmapTextureManager() {
+        return lightmapTextureManager;
+    }
+
+    @Override
+    public void setViewDistance(float v) {
+        viewDistance=v;
+    }
+
+    @Override
+    public void bobViewWhenHurtRelay(MatrixStack matrixStack, float tickDelta) {
+        bobViewWhenHurt(matrixStack,tickDelta);
+    }
+
+    @Override
+    public void bobViewRelay(MatrixStack matrixStack, float tickDelta) {
+        bobView(matrixStack,tickDelta);
+    }
+
+    @Override
+    public int getTicks() {
+        return ticks;
+    }
 
     @Inject(at = @At("HEAD"), method = "renderWorld",cancellable = true)
     void renderWorld(float tickDelta, long limitTime, MatrixStack matrix, CallbackInfo ci)

@@ -12,5 +12,5 @@ uniform mat4 uModelMat;
 void main()
 {
     tcColor = aColor;
-    tcWorldPos = uModelMat * vec4(aPos, 1.0);
+    tcWorldPos = uModelMat * vec4(-aPos.x,aPos.y,-aPos.z, 1.0);
 }
