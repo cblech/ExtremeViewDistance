@@ -3,11 +3,13 @@ package net.fabricmc.example.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.example.renderer.uniform.UniformMatrix4;
 import net.fabricmc.example.renderer.uniform.UniformVec3;
+import net.fabricmc.example.renderer.util.VertexBufferObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.client.util.math.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
@@ -18,6 +20,7 @@ import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.CallbackI;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -26,10 +29,13 @@ import java.util.Locale;
 public class RendererFarWorld {
 
     //private int shaderProgram;
-    private int VBO;
-    private int VAO;
+    //private int VBO;
+    //private int VAO;
 
-    private MyGlProgram program;
+    //private VertexBufferObject vertexBufferObject;
+
+    //private MyGlProgram program;
+    private FarWorldTile fwt;
 
     private GameRenderer gameRenderer;
     private IGameRendererExposed gameRendererExposed;
@@ -40,9 +46,9 @@ public class RendererFarWorld {
 
     private final static int FLOAT_SIZE = 4;
 
-    UniformVec3 uEyeWorldPos = new UniformVec3("uEyeWorldPos");
-    UniformMatrix4 uModelMat = new UniformMatrix4("uModelMat");
-    UniformMatrix4 uViewProjectionMat = new UniformMatrix4("uViewProjectionMat");
+    //UniformVec3 uEyeWorldPos = new UniformVec3("uEyeWorldPos");
+    //UniformMatrix4 uModelMat = new UniformMatrix4("uModelMat");
+    //UniformMatrix4 uViewProjectionMat = new UniformMatrix4("uViewProjectionMat");
 
     public static RendererFarWorld getRfwInstance() {
         return rfwInstance;
@@ -59,12 +65,17 @@ public class RendererFarWorld {
         System.out.println("######## Setting up FarWorld Renderer ########");
         System.out.println("OpenGL: " + GL11.glGetString(GL11.GL_VERSION));
 
+        FarWorldTile.removeProgram();
+        fwt = new FarWorldTile(gameRendererExposed);
+        fwt.setPosition(new Vector3f(0,63,0));
+        fwt.setSize(128);
+
         //caps = GL.createCapabilities(false);
 
 
-        int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
+        //int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
 
-
+/*
         try {
             program = MyGlProgram.factory()
                     .vertexShaderFromResource(new Identifier("extremeviewdistance:shader/world_vertex.glsl"), gameRendererExposed.getResourceContainer())
@@ -78,7 +89,7 @@ public class RendererFarWorld {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 /*
 
         float size = 1f;
@@ -89,54 +100,59 @@ public class RendererFarWorld {
                 0.0f, size, size, .0F, .0F, 1.0f, 1.0F
         };
 */
+        //float size = 16f;
 
-        VAO = ARBVertexArrayObject.glGenVertexArrays();
-        VBO = GL15.glGenBuffers();
+        //VAO = GL30.glGenVertexArrays();
+        //GL30.glBindVertexArray(VAO);
 
-        ARBVertexArrayObject.glBindVertexArray(VAO);
+        /*
+        vertexBufferObject = VertexBufferObject.factory()
+                .addAttribPointer(VertexBufferObject.Factory.AttribPointerType.VEC3F)
+                .addAttribPointer(VertexBufferObject.Factory.AttribPointerType.VEC4F)
+                .create();
+//
+        vertexBufferObject.data.clear()
+                .put(new Vector3f(size, 0, size)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
+                .put(new Vector3f(size, 0, 0)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
+                .put(new Vector3f(0, 0, size)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
+                .put(new Vector3f(0, 0, size)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
+                .put(new Vector3f(size, 0, 0)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
+                .put(new Vector3f(0, 0, 0)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
+                .push();
+
+        */
+        //VBO = GL15.glGenBuffers();
 
 
-        float size = 16f;
 
-        float[] verts = {
+        //float size = 16f;
+
+
+        /*float[] verts = {
 
                 //ppp
                 size, 0, size, 0.0f, 0.0f, 1.0f, 1.0F,
-                size, 0, 0, 0.0f, 0.0f, 1.0f, 1.0F,
-                0, 0, size, 0.0f, 0.0f, 1.0f, 1.0F,
-                0, 0, size, 0.0f, 0.0f, 1.0f, 1.0F,
-                size, 0, 0, 0.0f, 0.0f, 1.0f, 1.0F,
-                0, 0, 0, 0.0f, 0.0f, 1.0f, 1.0F,
-
-                0, 0, 0, 0.0f, 1.0f, 0.0f, 1.0F,
-                0, size, size / 2, 0.0f, 1.0f, 0.0f, 1.0F,
-                size, 0, size / 2, 0.0f, 1.0f, 0.0f, 1.0F,
-                0, size, size / 2, 0.0f, 1.0f, 0.0f, 1.0F,
-                size, 0, size / 2, 0.0f, 1.0f, 0.0f, 1.0F,
-                size, size, size, 0.0f, 1.0f, 0.0f, 1.0F,
-
-                0,        0,    0   , 1.0f, 0.0f, 0.0f, 1.0F,
-                size / 2, size, 0   , 1.0f, 0.0f, 0.0f, 1.0F,
-                size / 2, 0,    size, 1.0f, 0.0f, 0.0f, 1.0F,
-                size / 2, size, 0   , 1.0f, 0.0f, 0.0f, 1.0F,
-                size / 2, 0,    size, 1.0f, 0.0f, 0.0f, 1.0F,
-                size,     size, size, 1.0f, 0.0f, 0.0f, 1.0F
-
-        };
+                size, 0, 0,    0.0f, 0.0f, 1.0f, 1.0F,
+                0,   0, size,  0.0f, 0.0f, 1.0f, 1.0F,
+                0, 0, size,    0.0f, 0.0f, 1.0f, 1.0F,
+                size, 0, 0,    0.0f, 0.0f, 1.0f, 1.0F,
+                0, 0, 0,         0f, 0.0f, 1.0f, 1.0F
+        };*/
 
 
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, verts, GL15.GL_STATIC_DRAW);
+
+        //GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
+        //GL15.glBufferData(GL15.GL_ARRAY_BUFFER, verts, GL15.GL_STATIC_DRAW);
 
 
-        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, (3 + 4) * FLOAT_SIZE, 0);
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glVertexAttribPointer(1, 4, GL11.GL_FLOAT, false, (3 + 4) * FLOAT_SIZE, 3 * FLOAT_SIZE);
-        GL20.glEnableVertexAttribArray(1);
-
-        ARBVertexArrayObject.glBindVertexArray(currentVAO);
+        //GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, (3 + 4) * FLOAT_SIZE, 0);
+        //GL20.glEnableVertexAttribArray(0);
+        //GL20.glVertexAttribPointer(1, 4, GL11.GL_FLOAT, false, (3 + 4) * FLOAT_SIZE, 3 * FLOAT_SIZE);
+        //GL20.glEnableVertexAttribArray(1);
 
 
+        //vertexBufferObject.unbind();
+        //ARBVertexArrayObject.glBindVertexArray(currentVAO);
     }
 
     public void renderA(float tickDelta, long limitTime, MatrixStack matrix) {
@@ -145,55 +161,59 @@ public class RendererFarWorld {
 
         gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
 
+        FarWorldTile.useProgram();
+        FarWorldTile.setFrameValues(new Vector3f(gameRenderer.getCamera().getPos()),getViewProjectionMatrix(tickDelta));
+        fwt.draw();
+
+        FarWorldTile.unUseProgram();
+
         //GL11.glClearColor(.04f, .02f, .1f, 1f);
         //GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         //GL11.glDisable(GL11.GL_CULL_FACE);
 
-        program.use();
+        //program.use();
 
-        Matrix4f modelMat = new Matrix4f();
-        modelMat.loadIdentity();
-        modelMat.multiply(Matrix4f.translate(0f, 0, 0));
+        //Matrix4f modelMat = new Matrix4f();
+        //modelMat.loadIdentity();
+        //modelMat.multiply(Matrix4f.translate(0f, 0, 0));
 
 
         //viewProjectionMatrix.multiply(Matrix4f.projectionMatrix(gameRendererInstance.getMinecraftClient().getFramebuffer().viewportWidth,gameRendererInstance.getMinecraftClient().getFramebuffer().viewportHeight,0.1f,1000.f));
 
-        //System.out.println(matrix.peek().getModel());
-        program.pushUniform(uViewProjectionMat, getViewProjectionMatrix(tickDelta));
-        program.pushUniform(uEyeWorldPos, new Vector3f(gameRenderer.getCamera().getPos()));
+        //program.pushUniform(FarWorldTile.uViewProjectionMat, getViewProjectionMatrix(tickDelta));
+        //program.pushUniform(FarWorldTile.uEyeWorldPos, new Vector3f(gameRenderer.getCamera().getPos()));
 
 
-        //RenderSystem.depthMask(false);
-        //RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
 
-        ARBVertexArrayObject.glBindVertexArray(VAO);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
+        //ARBVertexArrayObject.glBindVertexArray(VAO);
+        //GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
 
-        GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+        //GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 
-        int zycles = 200;
-        Matrix4f mat = new Matrix4f();
+        //int cycles = 200;
+        //Matrix4f mat = new Matrix4f();
+
+        //vertexBufferObject.bind();
 
 
-        float offset = 16f;
-        for (int i = 0; i < zycles; i++) {
-            //for (int j = 0; j < zycles; j++) {
-                for (int k = 0; k < zycles; k++) {
-                    mat.loadIdentity();
-                    mat.multiply(Matrix4f.translate(i*offset,62,k*offset));
-                    program.pushUniform(uModelMat, mat);
-                    GL11.glDrawArrays(ARBTessellationShader.GL_PATCHES, 0, 6);
-                }
-            //}
-        }
+        //float offset = 16f;
+        //for (int i = 0; i < cycles; i++) {
+        //    //for (int j = 0; j < cycles; j++) {
+        //    for (int k = 0; k < cycles; k++) {
+        //        mat.loadIdentity();
+        //        mat.multiply(Matrix4f.translate(i * offset, 63, k * offset));
+        //        program.pushUniform(FarWorldTile.uModelMat, mat);
+        //        //vertexBufferObject.draw(ARBTessellationShader.GL_PATCHES);
+        //        GL11.glDrawArrays(ARBTessellationShader.GL_PATCHES, 0, 6);
+        //    }
+        //    //}
+        //}
 
-        GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+        //GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
         ARBVertexArrayObject.glBindVertexArray(currentVAO);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        //vertexBufferObject.unbind();
 
         //RenderSystem.enableCull();
 
@@ -207,7 +227,7 @@ public class RendererFarWorld {
         //framebuffer.draw(MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight());
 
 
-        program.unUse();
+        //program.unUse();
 
         //RenderSystem.disableCull();
         //RenderSystem.depthMask(true);
@@ -237,7 +257,7 @@ public class RendererFarWorld {
         boolean bl = gameRendererExposed.shouldRenderBlockOutlineRelay();
         this.client.getProfiler().swap("camera");
         Camera camera = gameRenderer.getCamera();
-        gameRendererExposed.setViewDistance((float)(this.client.options.viewDistance * 16));
+        gameRendererExposed.setViewDistance((float) (this.client.options.viewDistance * 16));
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.peek().getModel().multiply(gameRenderer.getBasicProjectionMatrix(camera, tickDelta, true));
         gameRendererExposed.bobViewWhenHurtRelay(matrixStack, tickDelta);
@@ -255,15 +275,15 @@ public class RendererFarWorld {
             float g = 5.0F / (f * f + 5.0F) - f * 0.04F;
             g *= g;
             Vector3f vector3f = new Vector3f(0.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F);
-            matrixStack.multiply(vector3f.getDegreesQuaternion(((float)gameRendererExposed.getTicks() + tickDelta) * (float)i));
+            matrixStack.multiply(vector3f.getDegreesQuaternion(((float) gameRendererExposed.getTicks() + tickDelta) * (float) i));
             matrixStack.scale(1.0F / g, 1.0F, 1.0F);
-            float h = -((float)gameRendererExposed.getTicks() + tickDelta) * (float)i;
+            float h = -((float) gameRendererExposed.getTicks() + tickDelta) * (float) i;
             matrixStack.multiply(vector3f.getDegreesQuaternion(h));
         }
 
         Matrix4f matrix4f = matrixStack.peek().getModel();
         gameRenderer.loadProjectionMatrix(matrix4f);
-        camera.update(this.client.world, (Entity)(this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity()), this.client.options.perspective > 0, this.client.options.perspective == 2, tickDelta);
+        camera.update(this.client.world, (Entity) (this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity()), this.client.options.perspective > 0, this.client.options.perspective == 2, tickDelta);
         matrix.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(camera.getPitch()));
         matrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(camera.getYaw() + 180.0F));
         this.client.worldRenderer.render(matrix, tickDelta, limitTime, bl, camera, gameRenderer, gameRendererExposed.getLightmapTextureManager(), matrix4f);
@@ -385,7 +405,7 @@ public class RendererFarWorld {
         viewProjectionMatrix.loadIdentity();
         viewProjectionMatrix.multiply(Matrix4f.viewboxMatrix(
                 /*FOV*/ gameRendererExposed.getFovRelay(camera, tickDelta, false),
-                (float)gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth() / (float)gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight(),
+                (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth() / (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight(),
                 0.05F,
                 100000.f)
                 /*gameRenderer.getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false)*/
@@ -438,8 +458,8 @@ public class RendererFarWorld {
 
     }
 
-    public void renderDispacher(){
-        renderA(tickDelta,limitTime,matrix);
+    public void renderDispacher() {
+        renderA(tickDelta, limitTime, matrix);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
     }
 
@@ -448,11 +468,11 @@ public class RendererFarWorld {
     private MatrixStack matrix;
 
     public void render(float tickDelta, long limitTime, MatrixStack matrix) {
-        this.tickDelta=tickDelta;
-        this.limitTime=limitTime;
-        this.matrix=matrix;
+        this.tickDelta = tickDelta;
+        this.limitTime = limitTime;
+        this.matrix = matrix;
 
-        renderWorld(tickDelta,limitTime,matrix);
+        renderWorld(tickDelta, limitTime, matrix);
         //renderA(tickDelta, limitTime, matrix);
     }
 }

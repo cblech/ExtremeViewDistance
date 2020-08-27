@@ -31,7 +31,7 @@ float GetTessLevel(float Distance0, float Distance1,float DistanceBetween)
 
     */
 
-    return (100.0*DistanceBetween) / (AvgDistance * (1+AvgDistance*0.001));
+    return (100.0*DistanceBetween) / (AvgDistance * (1+AvgDistance*0.0015));
 }
 
 void main()
