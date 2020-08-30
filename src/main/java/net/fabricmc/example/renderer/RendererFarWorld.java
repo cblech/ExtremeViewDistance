@@ -7,13 +7,15 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 //import net.minecraft.util.math.Matrix4f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.lwjgl.opengl.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class RendererFarWorld {
@@ -25,7 +27,7 @@ public class RendererFarWorld {
     //private VertexBufferObject vertexBufferObject;
 
     //private MyGlProgram program;
-    private FarWorldTile fwt;
+    private List<FarWorldTile> farWorldTiles = new ArrayList<>();
 
     private GameRenderer gameRenderer;
     private IGameRendererExposed gameRendererExposed;
@@ -56,10 +58,20 @@ public class RendererFarWorld {
         System.out.println("OpenGL: " + GL11.glGetString(GL11.GL_VERSION));
 
         FarWorldTile.removeProgram();
-        fwt = new FarWorldTile(gameRendererExposed, client.world);
-        fwt.setPosition(new Vector3f(0,0,0));
-        fwt.setSize(16);
-        fwt.setTexturesFromWorld();
+
+        int x = 16;
+        int s = 64;
+
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < x; j++) {
+                FarWorldTile newFarWorldTile = new FarWorldTile(gameRendererExposed, client.world);
+                newFarWorldTile.setPosition(new Vector3f(i * s, 0, j * s));
+                newFarWorldTile.setSize(s);
+                newFarWorldTile.setTexturesFromWorld();
+                farWorldTiles.add(newFarWorldTile);
+            }
+        }
+
         //fwt.setDepthTexture(new Identifier("extremeviewdistance:test/depth.png"), gameRendererExposed.getResourceContainer());
 
         //caps = GL.createCapabilities(false);
@@ -116,7 +128,6 @@ public class RendererFarWorld {
         //VBO = GL15.glGenBuffers();
 
 
-
         //float size = 16f;
 
 
@@ -130,7 +141,6 @@ public class RendererFarWorld {
                 size, 0, 0,    0.0f, 0.0f, 1.0f, 1.0F,
                 0, 0, 0,         0f, 0.0f, 1.0f, 1.0F
         };*/
-
 
 
         //GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
@@ -154,8 +164,10 @@ public class RendererFarWorld {
         //gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
 
         FarWorldTile.useProgram();
-        FarWorldTile.setFrameValues(McJoml.toJomlVector3f(gameRenderer.getCamera().getPos()),getViewProjectionMatrix(tickDelta));
-        fwt.draw();
+        FarWorldTile.setFrameValues(McJoml.toJomlVector3f(gameRenderer.getCamera().getPos()), getViewProjectionMatrix(tickDelta));
+        for (FarWorldTile f : farWorldTiles) {
+            f.draw();
+        }
 
         //int i = 0;
         //i=GL11.GL_PACK_SWAP_BYTES;
@@ -193,7 +205,6 @@ public class RendererFarWorld {
 
         //program.pushUniform(FarWorldTile.uViewProjectionMat, getViewProjectionMatrix(tickDelta));
         //program.pushUniform(FarWorldTile.uEyeWorldPos, new Vector3f(gameRenderer.getCamera().getPos()));
-
 
 
         //ARBVertexArrayObject.glBindVertexArray(VAO);
@@ -448,15 +459,15 @@ public class RendererFarWorld {
         //System.out.println(camera.getPitch()+" / "+camera.getYaw());
 
         Vector3fc translation = McJoml.toJomlVector3f(camera.getPos()).negate();
-        float aspectRat =(float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth()/ (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight();
+        float aspectRat = (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth() / (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight();
         //System.out.println(aspectRat);
 
         return new Matrix4f().perspective(
-                (float)Math.toRadians(gameRendererExposed.getFovRelay(camera,tickDelta,false)*1.1),
+                (float) Math.toRadians(gameRendererExposed.getFovRelay(camera, tickDelta, false) * 1.1),
                 aspectRat,
-                0.5f,100000)
-                .rotate((float) Math.toRadians(camera.getPitch()),1,0,0)
-                .rotate((float) Math.toRadians(camera.getYaw()+180f),0,1,0)
+                0.5f, 100000)
+                .rotate((float) Math.toRadians(camera.getPitch()), 1, 0, 0)
+                .rotate((float) Math.toRadians(camera.getYaw() + 180f), 0, 1, 0)
                 .translate(translation)
                 ;
 
@@ -508,8 +519,7 @@ public class RendererFarWorld {
         bla();
     }
 
-    public void bla()
-    {
+    public void bla() {
         //System.out.println(MinecraftClient.getInstance().world.getChunk(0,0).getHeightmap(Heightmap.Type.WORLD_SURFACE).get(0,0));
     }
 

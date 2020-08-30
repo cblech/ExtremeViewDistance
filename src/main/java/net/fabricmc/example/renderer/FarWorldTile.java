@@ -14,6 +14,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.*;
@@ -62,7 +63,7 @@ public class FarWorldTile {
     }
     //##################################################################################################################
 
-    private float size = 1f;
+    private int size = 1;
     private Vector3f position = new Vector3f();
 
     private Matrix4f transform = new Matrix4f();
@@ -76,7 +77,7 @@ public class FarWorldTile {
         return size;
     }
 
-    public void setSize(float size) {
+    public void setSize(int size) {
         this.size = size;
         updateTransformMat();
     }
@@ -96,7 +97,7 @@ public class FarWorldTile {
         //transform.multiply(Matrix4f.scale(size,size,size));
         transform
                 .identity()
-                .translate(position)
+                .translate(position.x,position.y,position.z)
                 .scale(size);
     }
 
@@ -110,8 +111,8 @@ public class FarWorldTile {
             //rt.bindTexture();
 
 
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);    // set texture wrapping to GL_REPEAT (default wrapping method)
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
             // set texture filtering parameters
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
@@ -126,7 +127,7 @@ public class FarWorldTile {
     public void setTexturesFromWorld() {
         program.use();
 
-        gt = new GeneratedTexture(16,16);
+        gt = new GeneratedTexture(size,size);
 
         //if(glDepthTexture>=0)
         //{
@@ -137,9 +138,13 @@ public class FarWorldTile {
 
         //ByteBuffer bb = ByteBuffer.allocateDirect(16 * 16 * 3);
         //byte[] bytes = new byte[16 * 16 * 3];
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                byte h = (byte) world.getChunk(0, 0).getHeightmap(Heightmap.Type.WORLD_SURFACE).get(i, j);
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                byte h = (byte) world.getChunk(
+                        ((int)position.x  +i)/16,
+                        ((int)position.z  +j)/16,
+                        ChunkStatus.EMPTY).getHeightmap(Heightmap.Type.WORLD_SURFACE)
+                        .get(((int)position.x  +i)%16, ((int)position.z  +j)%16);
 
                 gt.getNativeImage().setPixelColor(i,j,0xffffff00+h);
                 //bytes[(i + j * 16)*3]=h;
@@ -159,11 +164,11 @@ public class FarWorldTile {
 
         //GL13.glActiveTexture(GL13.GL_TEXTURE0);
 
-        //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
-        //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        //// set texture filtering parameters
-        //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_EDGE);    // set texture wrapping to GL_REPEAT (default wrapping method)
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_EDGE);
+        // set texture filtering parameters
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
         //bb.put(bytes);
 

@@ -16,7 +16,7 @@ void main()
     //float dt = dot(fNormal,uEyeWorldPos);
 
     //FragColor =vec4(fNormal.r,fNormal.g,fNormal.b,1.f);
-    float v = fWorldPos.y/25 - 2;
+    float v = fWorldPos.y/60 -1;
 
     FragColor = vec4(v,v,v,1);
 }
