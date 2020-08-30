@@ -5,6 +5,7 @@ layout (location=1) in vec4 aColor;
 
 out vec4 tcColor;
 out vec4 tcWorldPos;
+out vec2 tcTexCoord;
 
 uniform mat4 uModelMat;
 //uniform mat4 uViewProjectionMat;
@@ -12,5 +13,6 @@ uniform mat4 uModelMat;
 void main()
 {
     tcColor = aColor;
-    tcWorldPos = uModelMat * vec4(-aPos.x,aPos.y,-aPos.z, 1.0);
+    tcWorldPos = uModelMat * vec4(aPos.x,aPos.y,aPos.z, 1.0);
+    tcTexCoord = aPos.xz;
 }

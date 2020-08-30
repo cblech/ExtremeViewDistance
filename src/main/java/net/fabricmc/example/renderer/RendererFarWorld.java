@@ -1,29 +1,19 @@
 package net.fabricmc.example.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.example.renderer.uniform.UniformMatrix4;
-import net.fabricmc.example.renderer.uniform.UniformVec3;
-import net.fabricmc.example.renderer.util.VertexBufferObject;
+import net.fabricmc.example.renderer.util.converter.McJoml;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
-import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.client.util.math.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
+//import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.lwjgl.opengl.*;
-import org.lwjgl.system.CallbackI;
-
-import java.io.IOException;
-import java.util.Locale;
 
 
 public class RendererFarWorld {
@@ -66,9 +56,11 @@ public class RendererFarWorld {
         System.out.println("OpenGL: " + GL11.glGetString(GL11.GL_VERSION));
 
         FarWorldTile.removeProgram();
-        fwt = new FarWorldTile(gameRendererExposed);
-        fwt.setPosition(new Vector3f(0,63,0));
-        fwt.setSize(128);
+        fwt = new FarWorldTile(gameRendererExposed, client.world);
+        fwt.setPosition(new Vector3f(0,0,0));
+        fwt.setSize(16);
+        fwt.setTexturesFromWorld();
+        //fwt.setDepthTexture(new Identifier("extremeviewdistance:test/depth.png"), gameRendererExposed.getResourceContainer());
 
         //caps = GL.createCapabilities(false);
 
@@ -159,11 +151,29 @@ public class RendererFarWorld {
 
         int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
 
-        gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
+        //gameRenderer.getCamera().update(gameRendererExposed.getMinecraftClient().world, gameRendererExposed.getMinecraftClient().cameraEntity, false, false, tickDelta);
 
         FarWorldTile.useProgram();
-        FarWorldTile.setFrameValues(new Vector3f(gameRenderer.getCamera().getPos()),getViewProjectionMatrix(tickDelta));
+        FarWorldTile.setFrameValues(McJoml.toJomlVector3f(gameRenderer.getCamera().getPos()),getViewProjectionMatrix(tickDelta));
         fwt.draw();
+
+        //int i = 0;
+        //i=GL11.GL_PACK_SWAP_BYTES;
+        //i= GL11.GL_PACK_LSB_FIRST;
+        //i= GL11.GL_PACK_ROW_LENGTH;
+        //i= GL12.GL_PACK_IMAGE_HEIGHT;
+        //i= GL11.GL_PACK_SKIP_ROWS;
+        //i= GL11.GL_PACK_SKIP_PIXELS;
+        //i= GL12.GL_PACK_SKIP_IMAGES;
+        //i= GL11.GL_PACK_ALIGNMENT;
+        //i= GL11.GL_UNPACK_SWAP_BYTES;
+        //i= GL11.GL_UNPACK_LSB_FIRST;
+        //i= GL11.GL_UNPACK_ROW_LENGTH;
+        //i= GL12.GL_UNPACK_IMAGE_HEIGHT;
+        //i= GL11.GL_UNPACK_SKIP_ROWS;
+        //i= GL11.GL_UNPACK_SKIP_PIXELS;
+        //i= GL12.GL_UNPACK_SKIP_IMAGES;
+        //i= GL11.GL_UNPACK_ALIGNMENT;
 
         FarWorldTile.unUseProgram();
 
@@ -274,18 +284,29 @@ public class RendererFarWorld {
 
             float g = 5.0F / (f * f + 5.0F) - f * 0.04F;
             g *= g;
-            Vector3f vector3f = new Vector3f(0.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F);
+            net.minecraft.client.util.math.Vector3f vector3f = new net.minecraft.client.util.math.Vector3f(0.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F);
             matrixStack.multiply(vector3f.getDegreesQuaternion(((float) gameRendererExposed.getTicks() + tickDelta) * (float) i));
             matrixStack.scale(1.0F / g, 1.0F, 1.0F);
             float h = -((float) gameRendererExposed.getTicks() + tickDelta) * (float) i;
             matrixStack.multiply(vector3f.getDegreesQuaternion(h));
         }
 
-        Matrix4f matrix4f = matrixStack.peek().getModel();
+        net.minecraft.util.math.Matrix4f matrix4f = matrixStack.peek().getModel();
         gameRenderer.loadProjectionMatrix(matrix4f);
-        camera.update(this.client.world, (Entity) (this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity()), this.client.options.perspective > 0, this.client.options.perspective == 2, tickDelta);
-        matrix.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(camera.getPitch()));
-        matrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(camera.getYaw() + 180.0F));
+        camera.update(
+                this.client.world,
+                (Entity)
+                        (this.client.getCameraEntity() ==
+                                null ? this.client.player :
+                                this.client.getCameraEntity()
+                        ),
+
+                false,//this.clientxyz.options.perspective > 0,
+                false,//this.clientxyz.options.perspective == 2,
+                tickDelta);
+
+        matrix.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(camera.getPitch()));
+        matrix.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(camera.getYaw() + 180.0F));
         this.client.worldRenderer.render(matrix, tickDelta, limitTime, bl, camera, gameRenderer, gameRendererExposed.getLightmapTextureManager(), matrix4f);
         this.client.getProfiler().swap("hand");
         if (gameRendererExposed.getRenderHand()) {
@@ -399,29 +420,51 @@ public class RendererFarWorld {
 
     private Matrix4f getViewProjectionMatrix(float tickDelta) {
         Camera camera = gameRenderer.getCamera();
-
+/*
         Matrix4f viewProjectionMatrix = new Matrix4f();
 
-        viewProjectionMatrix.loadIdentity();
-        viewProjectionMatrix.multiply(Matrix4f.viewboxMatrix(
-                /*FOV*/ gameRendererExposed.getFovRelay(camera, tickDelta, false),
-                (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth() / (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight(),
-                0.05F,
-                100000.f)
-                /*gameRenderer.getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false)*/
-        );
+        viewProjectionMatrix.multiply(Matrix4f.projectionMatrix(
+                (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth(),
+                (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight(),
+                0.5f,10000.f));//gameRenderer.getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false)
+
+
+
+        viewProjectionMatrix.multiply(new Vector3f(1, 0, 0).getDegreesQuaternion(camera.getPitch()));
+        viewProjectionMatrix.multiply(new Vector3f(0, 1, 0).getDegreesQuaternion(camera.getYaw() + 180f));
+        viewProjectionMatrix.translate(
+                -(float) camera.getPos().getX(),
+                -(float) camera.getPos().getY(),
+                -(float) camera.getPos().getZ());
+
+
+
+
         //new Vector3f(0,1,0).getDegreesQuaternion( gameRendererInstance.getCamera().getPitch());
 
-        viewProjectionMatrix.multiply(new Vector3f(1, 0, 0).getDegreesQuaternion(gameRenderer.getCamera().getPitch()));
-        viewProjectionMatrix.multiply(new Vector3f(0, 1, 0).getDegreesQuaternion(gameRenderer.getCamera().getYaw() + 180f));
-        viewProjectionMatrix.multiply(Matrix4f.translate(
-                -(float) gameRenderer.getCamera().getPos().getX(),
-                -(float) gameRenderer.getCamera().getPos().getY(),
-                -(float) gameRenderer.getCamera().getPos().getZ()));
 
+        return viewProjectionMatrix.peek().getModel();*/
 
-        return viewProjectionMatrix;
+        //System.out.println(camera.getPitch()+" / "+camera.getYaw());
+
+        Vector3fc translation = McJoml.toJomlVector3f(camera.getPos()).negate();
+        float aspectRat =(float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth()/ (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight();
+        //System.out.println(aspectRat);
+
+        return new Matrix4f().perspective(
+                (float)Math.toRadians(gameRendererExposed.getFovRelay(camera,tickDelta,false)*1.1),
+                aspectRat,
+                0.5f,100000)
+                .rotate((float) Math.toRadians(camera.getPitch()),1,0,0)
+                .rotate((float) Math.toRadians(camera.getYaw()+180f),0,1,0)
+                .translate(translation)
+                ;
+
     }
+
+    //private Matrix4f makePerspectiveMat(float top,float bottom,float left, float right, float near, float far){
+    //    Matrix4f m = new Matrix4f();
+    //}
 
     public void renderB(Camera camera) {
         Tessellator tessellator = Tessellator.getInstance();
@@ -461,6 +504,13 @@ public class RendererFarWorld {
     public void renderDispacher() {
         renderA(tickDelta, limitTime, matrix);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+
+        bla();
+    }
+
+    public void bla()
+    {
+        //System.out.println(MinecraftClient.getInstance().world.getChunk(0,0).getHeightmap(Heightmap.Type.WORLD_SURFACE).get(0,0));
     }
 
     private float tickDelta;

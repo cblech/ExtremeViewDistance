@@ -8,10 +8,12 @@ uniform vec3 uEyeWorldPos;
 // attributes of the input CPs
 in vec4 tcWorldPos[];
 in vec4 tcColor[];
+in vec2 tcTexCoord[];
 
 // attributes of the output CPs
 out vec4 teWorldPos[];
 out vec4 teColor[];
+out vec2 teTexCoord[];
 
 float GetTessLevel(float Distance0, float Distance1,float DistanceBetween)
 {
@@ -31,7 +33,7 @@ float GetTessLevel(float Distance0, float Distance1,float DistanceBetween)
 
     */
 
-    return (100.0*DistanceBetween) / (AvgDistance * (1+AvgDistance*0.0015));
+    return (400.0*DistanceBetween) / (AvgDistance * (1+AvgDistance*0.0015));
 }
 
 void main()
@@ -40,6 +42,7 @@ void main()
     // Set the control points of the output patch
     teWorldPos[gl_InvocationID] = tcWorldPos[gl_InvocationID];
     teColor[gl_InvocationID] = tcColor[gl_InvocationID];
+    teTexCoord[gl_InvocationID] = tcTexCoord[gl_InvocationID];
     //teColor[gl_InvocationID] = tcColor[gl_InvocationID];
 
     // Calculate the distance from the camera to the three control points

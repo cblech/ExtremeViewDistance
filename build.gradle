@@ -17,6 +17,14 @@ minecraft {
 
 repositories {
     maven { url = "http://maven.fabricmc.net/" }
+    maven {
+        name = "grondag"
+        url = "https://grondag-repo.appspot.com"
+        credentials {
+            username "guest"
+            password ""
+        }
+    }
 }
 
 dependencies {
@@ -29,6 +37,11 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+
+    //implementation "org.joml:joml:1.9.25"
+
+    modImplementation "grondag:joml-mod:1.0+"
+    include "grondag:joml-mod:1.0+"
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
@@ -59,7 +72,10 @@ tasks.withType(JavaCompile) {
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
-    from sourceSets.main.allSource
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    //from sourceSets.main.allSource
 }
 
 task jarToDotMc(type: Copy, dependsOn: ['remapJar']){
