@@ -7,6 +7,7 @@ in vec3 fNormal;
 out vec4 FragColor;
 
 uniform sampler2D uDepthSampler;
+uniform sampler2D uColorSampler;
 uniform vec3 uEyeWorldPos;
 
 void main()
@@ -18,5 +19,5 @@ void main()
     //FragColor =vec4(fNormal.r,fNormal.g,fNormal.b,1.f);
     float v = fWorldPos.y/60 -1;
 
-    FragColor = vec4(v,v,v,1);
+    FragColor = texture(uColorSampler,fTexCoord);// vec4(v,v,v,1);
 }

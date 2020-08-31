@@ -14,7 +14,7 @@ public class BackgroundRendererMixin {
     private static void applyFog(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, CallbackInfo ci) {
         if(fogType== BackgroundRenderer.FogType.FOG_TERRAIN)
         {
-            RendererFarWorld.getRfwInstance().renderDispacher();
+            RendererFarWorld.getRfwInstance().renderDispatcher();
         }
         ci.cancel();
     }

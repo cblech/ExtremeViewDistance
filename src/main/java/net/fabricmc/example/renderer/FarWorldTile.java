@@ -1,15 +1,10 @@
 package net.fabricmc.example.renderer;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.example.renderer.uniform.UniformFloat;
 import net.fabricmc.example.renderer.uniform.UniformInt;
 import net.fabricmc.example.renderer.uniform.UniformMatrix4;
 import net.fabricmc.example.renderer.uniform.UniformVec3;
-import net.fabricmc.loader.util.sat4j.core.Vec;
 import net.minecraft.client.texture.ResourceTexture;
-import net.minecraft.client.util.PngFile;
-import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.Heightmap;
@@ -18,13 +13,8 @@ import net.minecraft.world.chunk.ChunkStatus;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.*;
-import org.lwjgl.system.CallbackI;
-import sun.awt.image.PNGImageDecoder;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.util.Arrays;
 
 
 public class FarWorldTile {
@@ -39,6 +29,7 @@ public class FarWorldTile {
     }
 
     public static final UniformInt uDepthSampler = new UniformInt("uDepthSampler");
+    public static final UniformInt uColorSampler = new UniformInt("uColorSampler");
     public static final UniformVec3 uEyeWorldPos = new UniformVec3("uEyeWorldPos");
     public static final UniformMatrix4 uModelMat = new UniformMatrix4("uModelMat");
     public static final UniformMatrix4 uViewProjectionMat = new UniformMatrix4("uViewProjectionMat");
@@ -68,7 +59,8 @@ public class FarWorldTile {
 
     private Matrix4f transform = new Matrix4f();
     private ResourceTexture rt;
-    GeneratedTexture gt;
+    GeneratedTexture depthTexture;
+    GeneratedTexture colorTexture;
     private int glDepthTexture = -1;
 
     private World world;
@@ -127,7 +119,8 @@ public class FarWorldTile {
     public void setTexturesFromWorld() {
         program.use();
 
-        gt = new GeneratedTexture(size,size);
+        depthTexture = new GeneratedTexture(size,size);
+        colorTexture = new GeneratedTexture(size,size);
 
         //if(glDepthTexture>=0)
         //{
@@ -146,7 +139,9 @@ public class FarWorldTile {
                         ChunkStatus.EMPTY).getHeightmap(Heightmap.Type.WORLD_SURFACE)
                         .get(((int)position.x  +i)%16, ((int)position.z  +j)%16);
 
-                gt.getNativeImage().setPixelColor(i,j,0xffffff00+h);
+
+                colorTexture.getNativeImage().setPixelColor(i,j,DataGatherer.getColor(world,(int)position.x  +i,(int)position.z  +j));
+                depthTexture.getNativeImage().setPixelColor(i,j,0xffffff00+DataGatherer.getHeight(world,(int)position.x  +i,(int)position.z  +j));
                 //bytes[(i + j * 16)*3]=h;
                 //bytes[(i + j * 16)*3+1]=h;
                 //bytes[(i + j * 16)*3+2]=h;
@@ -155,30 +150,31 @@ public class FarWorldTile {
             }
         }
 
-        gt.upload();
-
-        //GlStateManager.pixelStore(GL11.GL_UNPACK_ROW_LENGTH,0);
-        //GlStateManager.pixelStore(GL11.GL_UNPACK_SKIP_PIXELS,0);
-        //GlStateManager.pixelStore(GL11.GL_UNPACK_SKIP_ROWS,0);
-
-
-        //GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        depthTexture.upload();
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_EDGE);    // set texture wrapping to GL_REPEAT (default wrapping method)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_EDGE);
-        // set texture filtering parameters
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
-        //bb.put(bytes);
-
-        //TODO MAKE TEXTURES WORK
-        //GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGB8,16,16,0,GL11.GL_RGB,GL11.GL_BYTE,bb);
-
-        //GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+        program.pushUniform(uDepthSampler, 0);
 
 
-        //program.pushUniform(uDepthSampler, 0);
+        GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        colorTexture.upload();
+
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_EDGE);    // set texture wrapping to GL_REPEAT (default wrapping method)
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_EDGE);
+
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+
+        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+        program.pushUniform(uColorSampler, 1);
+
     }
 
     public void draw() {
@@ -189,7 +185,12 @@ public class FarWorldTile {
         //if(rt!=null)
         //    rt.bindTexture();
 
-        gt.bindTexture();
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        depthTexture.bindTexture();
+        GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        colorTexture.bindTexture();
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
@@ -225,6 +226,7 @@ public class FarWorldTile {
                         .uniform(uViewProjectionMat)
                         .uniform(uEyeWorldPos)
                         .uniform(uDepthSampler)
+                        .uniform(uColorSampler)
                         .create();
 
                 VAO = GL30.glGenVertexArrays();
@@ -235,12 +237,12 @@ public class FarWorldTile {
                 float[] verts = {
 
                         //ppp
-                        1, 0, 1, 0.0f, 0.0f, 1.0f, 1.0F,
-                        1, 0, 0, 0.0f, 0.0f, 1.0f, 1.0F,
-                        0, 0, 1, 0.0f, 0.0f, 1.0f, 1.0F,
-                        0, 0, 1, 0.0f, 0.0f, 1.0f, 1.0F,
-                        1, 0, 0, 0.0f, 0.0f, 1.0f, 1.0F,
-                        0, 0, 0, 0f, 0.0f, 1.0f, 1.0F
+                        1, 0, 1, 0.0f, 0.0f, 1.0f, 1.0f,
+                        1, 0, 0, 0.0f, 0.0f, 1.0f, 1.0f,
+                        0, 0, 1, 0.0f, 0.0f, 1.0f, 1.0f,
+                        0, 0, 1, 0.0f, 0.0f, 1.0f, 1.0f,
+                        1, 0, 0, 0.0f, 0.0f, 1.0f, 1.0f,
+                        0, 0, 0, 0.0f, 0.0f, 1.0f, 1.0f
                 };
 
                 GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);

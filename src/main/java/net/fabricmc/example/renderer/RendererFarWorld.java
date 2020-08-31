@@ -20,13 +20,6 @@ import java.util.List;
 
 public class RendererFarWorld {
 
-    //private int shaderProgram;
-    //private int VBO;
-    //private int VAO;
-
-    //private VertexBufferObject vertexBufferObject;
-
-    //private MyGlProgram program;
     private List<FarWorldTile> farWorldTiles = new ArrayList<>();
 
     private GameRenderer gameRenderer;
@@ -37,10 +30,6 @@ public class RendererFarWorld {
     private static RendererFarWorld rfwInstance;
 
     private final static int FLOAT_SIZE = 4;
-
-    //UniformVec3 uEyeWorldPos = new UniformVec3("uEyeWorldPos");
-    //UniformMatrix4 uModelMat = new UniformMatrix4("uModelMat");
-    //UniformMatrix4 uViewProjectionMat = new UniformMatrix4("uViewProjectionMat");
 
     public static RendererFarWorld getRfwInstance() {
         return rfwInstance;
@@ -72,89 +61,6 @@ public class RendererFarWorld {
             }
         }
 
-        //fwt.setDepthTexture(new Identifier("extremeviewdistance:test/depth.png"), gameRendererExposed.getResourceContainer());
-
-        //caps = GL.createCapabilities(false);
-
-
-        //int currentVAO = GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
-
-/*
-        try {
-            program = MyGlProgram.factory()
-                    .vertexShaderFromResource(new Identifier("extremeviewdistance:shader/world_vertex.glsl"), gameRendererExposed.getResourceContainer())
-                    .tesselationControlShaderFromResource(new Identifier("extremeviewdistance:shader/world_tesselation_control.glsl"), gameRendererExposed.getResourceContainer())
-                    .tesselationEvaluationShaderFromResource(new Identifier("extremeviewdistance:shader/world_tesselation_evaluation.glsl"), gameRendererExposed.getResourceContainer())
-                    .fragmentShaderFromResource(new Identifier("extremeviewdistance:shader/world_fragment.glsl"), gameRendererExposed.getResourceContainer())
-                    .uniform(uModelMat)
-                    .uniform(uViewProjectionMat)
-                    .uniform(uEyeWorldPos)
-                    .create();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-/*
-
-        float size = 1f;
-
-        float[] verts = {
-                -size, -size, size, 1.0f, .0F, .0F, 1.0F,
-                size, -size, size, 1.0F, 1.0f, .0F, 1.0F,
-                0.0f, size, size, .0F, .0F, 1.0f, 1.0F
-        };
-*/
-        //float size = 16f;
-
-        //VAO = GL30.glGenVertexArrays();
-        //GL30.glBindVertexArray(VAO);
-
-        /*
-        vertexBufferObject = VertexBufferObject.factory()
-                .addAttribPointer(VertexBufferObject.Factory.AttribPointerType.VEC3F)
-                .addAttribPointer(VertexBufferObject.Factory.AttribPointerType.VEC4F)
-                .create();
-//
-        vertexBufferObject.data.clear()
-                .put(new Vector3f(size, 0, size)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
-                .put(new Vector3f(size, 0, 0)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
-                .put(new Vector3f(0, 0, size)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
-                .put(new Vector3f(0, 0, size)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
-                .put(new Vector3f(size, 0, 0)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
-                .put(new Vector3f(0, 0, 0)).put(new Vector4f(0.0f, 0.0f, 1.0f, 1.0F)).next()
-                .push();
-
-        */
-        //VBO = GL15.glGenBuffers();
-
-
-        //float size = 16f;
-
-
-        /*float[] verts = {
-
-                //ppp
-                size, 0, size, 0.0f, 0.0f, 1.0f, 1.0F,
-                size, 0, 0,    0.0f, 0.0f, 1.0f, 1.0F,
-                0,   0, size,  0.0f, 0.0f, 1.0f, 1.0F,
-                0, 0, size,    0.0f, 0.0f, 1.0f, 1.0F,
-                size, 0, 0,    0.0f, 0.0f, 1.0f, 1.0F,
-                0, 0, 0,         0f, 0.0f, 1.0f, 1.0F
-        };*/
-
-
-        //GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
-        //GL15.glBufferData(GL15.GL_ARRAY_BUFFER, verts, GL15.GL_STATIC_DRAW);
-
-
-        //GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, (3 + 4) * FLOAT_SIZE, 0);
-        //GL20.glEnableVertexAttribArray(0);
-        //GL20.glVertexAttribPointer(1, 4, GL11.GL_FLOAT, false, (3 + 4) * FLOAT_SIZE, 3 * FLOAT_SIZE);
-        //GL20.glEnableVertexAttribArray(1);
-
-
-        //vertexBufferObject.unbind();
-        //ARBVertexArrayObject.glBindVertexArray(currentVAO);
     }
 
     public void renderA(float tickDelta, long limitTime, MatrixStack matrix) {
@@ -169,101 +75,11 @@ public class RendererFarWorld {
             f.draw();
         }
 
-        //int i = 0;
-        //i=GL11.GL_PACK_SWAP_BYTES;
-        //i= GL11.GL_PACK_LSB_FIRST;
-        //i= GL11.GL_PACK_ROW_LENGTH;
-        //i= GL12.GL_PACK_IMAGE_HEIGHT;
-        //i= GL11.GL_PACK_SKIP_ROWS;
-        //i= GL11.GL_PACK_SKIP_PIXELS;
-        //i= GL12.GL_PACK_SKIP_IMAGES;
-        //i= GL11.GL_PACK_ALIGNMENT;
-        //i= GL11.GL_UNPACK_SWAP_BYTES;
-        //i= GL11.GL_UNPACK_LSB_FIRST;
-        //i= GL11.GL_UNPACK_ROW_LENGTH;
-        //i= GL12.GL_UNPACK_IMAGE_HEIGHT;
-        //i= GL11.GL_UNPACK_SKIP_ROWS;
-        //i= GL11.GL_UNPACK_SKIP_PIXELS;
-        //i= GL12.GL_UNPACK_SKIP_IMAGES;
-        //i= GL11.GL_UNPACK_ALIGNMENT;
-
         FarWorldTile.unUseProgram();
 
-        //GL11.glClearColor(.04f, .02f, .1f, 1f);
-        //GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-
-        //GL11.glDisable(GL11.GL_CULL_FACE);
-
-        //program.use();
-
-        //Matrix4f modelMat = new Matrix4f();
-        //modelMat.loadIdentity();
-        //modelMat.multiply(Matrix4f.translate(0f, 0, 0));
-
-
-        //viewProjectionMatrix.multiply(Matrix4f.projectionMatrix(gameRendererInstance.getMinecraftClient().getFramebuffer().viewportWidth,gameRendererInstance.getMinecraftClient().getFramebuffer().viewportHeight,0.1f,1000.f));
-
-        //program.pushUniform(FarWorldTile.uViewProjectionMat, getViewProjectionMatrix(tickDelta));
-        //program.pushUniform(FarWorldTile.uEyeWorldPos, new Vector3f(gameRenderer.getCamera().getPos()));
-
-
-        //ARBVertexArrayObject.glBindVertexArray(VAO);
-        //GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, VBO);
-
-        //GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-
-        //int cycles = 200;
-        //Matrix4f mat = new Matrix4f();
-
-        //vertexBufferObject.bind();
-
-
-        //float offset = 16f;
-        //for (int i = 0; i < cycles; i++) {
-        //    //for (int j = 0; j < cycles; j++) {
-        //    for (int k = 0; k < cycles; k++) {
-        //        mat.loadIdentity();
-        //        mat.multiply(Matrix4f.translate(i * offset, 63, k * offset));
-        //        program.pushUniform(FarWorldTile.uModelMat, mat);
-        //        //vertexBufferObject.draw(ARBTessellationShader.GL_PATCHES);
-        //        GL11.glDrawArrays(ARBTessellationShader.GL_PATCHES, 0, 6);
-        //    }
-        //    //}
-        //}
-
-        //GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 
         ARBVertexArrayObject.glBindVertexArray(currentVAO);
-        //vertexBufferObject.unbind();
 
-        //RenderSystem.enableCull();
-
-        //RenderSystem.depthMask(true);
-        //RenderSystem.enableDepthTest();
-
-        //GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, 0);
-
-        //framebuffer.endWrite();
-
-        //framebuffer.draw(MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight());
-
-
-        //program.unUse();
-
-        //RenderSystem.disableCull();
-        //RenderSystem.depthMask(true);
-        //RenderSystem.enableDepthTest();
-//
-        //RenderSystem.pushMatrix();
-        ////RenderSystem.rotatef((System.currentTimeMillis()/10)%360,0,1,1);
-        ////RenderSystem.translatef(-1,1,0);
-//
-        //if (gameRendererExposed.getRenderHand()) {
-        //    RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
-        //    gameRendererExposed.renderHandRelay(matrix, gameRenderer.getCamera(), tickDelta);
-        //}
-//
-        //RenderSystem.popMatrix();
     }
 
 
@@ -431,32 +247,6 @@ public class RendererFarWorld {
 
     private Matrix4f getViewProjectionMatrix(float tickDelta) {
         Camera camera = gameRenderer.getCamera();
-/*
-        Matrix4f viewProjectionMatrix = new Matrix4f();
-
-        viewProjectionMatrix.multiply(Matrix4f.projectionMatrix(
-                (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth(),
-                (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight(),
-                0.5f,10000.f));//gameRenderer.getBasicProjectionMatrix(gameRenderer.getCamera(), tickDelta, false)
-
-
-
-        viewProjectionMatrix.multiply(new Vector3f(1, 0, 0).getDegreesQuaternion(camera.getPitch()));
-        viewProjectionMatrix.multiply(new Vector3f(0, 1, 0).getDegreesQuaternion(camera.getYaw() + 180f));
-        viewProjectionMatrix.translate(
-                -(float) camera.getPos().getX(),
-                -(float) camera.getPos().getY(),
-                -(float) camera.getPos().getZ());
-
-
-
-
-        //new Vector3f(0,1,0).getDegreesQuaternion( gameRendererInstance.getCamera().getPitch());
-
-
-        return viewProjectionMatrix.peek().getModel();*/
-
-        //System.out.println(camera.getPitch()+" / "+camera.getYaw());
 
         Vector3fc translation = McJoml.toJomlVector3f(camera.getPos()).negate();
         float aspectRat = (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferWidth() / (float) gameRendererExposed.getMinecraftClient().getWindow().getFramebufferHeight();
@@ -472,10 +262,6 @@ public class RendererFarWorld {
                 ;
 
     }
-
-    //private Matrix4f makePerspectiveMat(float top,float bottom,float left, float right, float near, float far){
-    //    Matrix4f m = new Matrix4f();
-    //}
 
     public void renderB(Camera camera) {
         Tessellator tessellator = Tessellator.getInstance();
@@ -512,16 +298,12 @@ public class RendererFarWorld {
 
     }
 
-    public void renderDispacher() {
+    public void renderDispatcher() {
         renderA(tickDelta, limitTime, matrix);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        bla();
     }
 
-    public void bla() {
-        //System.out.println(MinecraftClient.getInstance().world.getChunk(0,0).getHeightmap(Heightmap.Type.WORLD_SURFACE).get(0,0));
-    }
 
     private float tickDelta;
     private long limitTime;
