@@ -12,12 +12,24 @@ uniform vec3 uEyeWorldPos;
 
 void main()
 {
-    vec4 t = texture(uDepthSampler,fTexCoord);
+    //vec4 t = texture(uDepthSampler,fTexCoord);
 
     //float dt = dot(fNormal,uEyeWorldPos);
 
-    //FragColor =vec4(fNormal.r,fNormal.g,fNormal.b,1.f);
-    float v = fWorldPos.y/60 -1;
 
-    FragColor = texture(uColorSampler,fTexCoord);// vec4(v,v,v,1);
+    //FragColor =vec4(fNormal.r,fNormal.g,fNormal.b,1.f);
+    //float v = fWorldPos.y/60 -1;
+
+    float threshhold = 0.98;
+
+    if( fNormal.r<threshhold&&fNormal.r>-threshhold&&
+        fNormal.b<threshhold&&fNormal.b>-threshhold)
+    {
+        //FragColor =vec4(1,1,1,1.f);
+        FragColor = texture(uColorSampler,fTexCoord);
+    }else{
+        discard;
+    }
+
+    // vec4(v,v,v,1);
 }

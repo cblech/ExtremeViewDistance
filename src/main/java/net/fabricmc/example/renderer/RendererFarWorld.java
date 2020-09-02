@@ -3,6 +3,7 @@ package net.fabricmc.example.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.example.renderer.util.converter.McJoml;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -13,9 +14,14 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.CallbackI;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 
 public class RendererFarWorld {
@@ -61,7 +67,9 @@ public class RendererFarWorld {
             }
         }
 
+        photoRenderer = new PhotoRenderer();
     }
+
 
     public void renderA(float tickDelta, long limitTime, MatrixStack matrix) {
 
@@ -304,10 +312,12 @@ public class RendererFarWorld {
 
     }
 
+    private PhotoRenderer photoRenderer;
 
     private float tickDelta;
     private long limitTime;
     private MatrixStack matrix;
+
 
     public void render(float tickDelta, long limitTime, MatrixStack matrix) {
         this.tickDelta = tickDelta;
@@ -316,5 +326,8 @@ public class RendererFarWorld {
 
         renderWorld(tickDelta, limitTime, matrix);
         //renderA(tickDelta, limitTime, matrix);
+
+        photoRenderer.draw();
+
     }
 }
