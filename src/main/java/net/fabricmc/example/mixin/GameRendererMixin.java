@@ -171,7 +171,7 @@ public abstract class GameRendererMixin implements IGameRendererExposed {
                 rendererFarWorld.render(tickDelta,limitTime,matrix);
             }
             catch (NullPointerException e){
-                e.printStackTrace();
+                //e.printStackTrace();
                 rendererFarWorld = new RendererFarWorld((GameRenderer)(IGameRendererExposed)this);
             }
         }

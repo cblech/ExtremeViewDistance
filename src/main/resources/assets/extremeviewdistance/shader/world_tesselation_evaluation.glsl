@@ -45,8 +45,8 @@ void main()
 
     fNormal = normalize(
         cross(
-            vec3(0f,texture(uDepthSampler,fTexCoord+vec2(0,0.04)).r-texture(uDepthSampler,fTexCoord).r,0.04f),
-            vec3(0.04f,texture(uDepthSampler,fTexCoord+vec2(0.04,0)).r-texture(uDepthSampler,fTexCoord).r,0f)));
+            vec3(0.f,texture(uDepthSampler,fTexCoord+vec2(0,0.04)).r-texture(uDepthSampler,fTexCoord).r,0.04f),
+            vec3(0.04f,texture(uDepthSampler,fTexCoord+vec2(0.04,0)).r-texture(uDepthSampler,fTexCoord).r,0.f)));
 
     // Displace the vertex along the normal
     //float Displacement = texture(gDisplacementMap, TexCoord_FS_in.xy).x;

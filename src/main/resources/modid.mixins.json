@@ -6,7 +6,9 @@
     "BackgroundRendererMixin",
     "GameRendererMixin",
     "GLFWMixin",
-    "WindowMixin"
+    "Matrix4fMixin",
+    "WindowMixin",
+    "WorldRendererMixin"
   ],
   "client": [
     "ExampleMixin",

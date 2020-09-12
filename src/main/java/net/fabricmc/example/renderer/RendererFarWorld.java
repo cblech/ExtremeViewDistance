@@ -28,10 +28,10 @@ public class RendererFarWorld {
 
     private List<FarWorldTile> farWorldTiles = new ArrayList<>();
 
-    private GameRenderer gameRenderer;
-    private IGameRendererExposed gameRendererExposed;
+    public GameRenderer gameRenderer;
+    public IGameRendererExposed gameRendererExposed;
 
-    private MinecraftClient client;
+    public MinecraftClient client;
 
     private static RendererFarWorld rfwInstance;
 
@@ -54,7 +54,7 @@ public class RendererFarWorld {
 
         FarWorldTile.removeProgram();
 
-        int x = 16;
+        int x = 4;
         int s = 64;
 
         for (int i = 0; i < x; i++) {
@@ -67,7 +67,7 @@ public class RendererFarWorld {
             }
         }
 
-        photoRenderer = new PhotoRenderer();
+        photoRenderer = new PhotoRenderer(this);
     }
 
 
@@ -325,9 +325,10 @@ public class RendererFarWorld {
         this.matrix = matrix;
 
         renderWorld(tickDelta, limitTime, matrix);
+        photoRenderer.draw();
         //renderA(tickDelta, limitTime, matrix);
 
-        photoRenderer.draw();
+        photoRenderer.drawDebug();
 
     }
 }
